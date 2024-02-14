@@ -1,0 +1,47 @@
+#cloud-config
+growpart:
+  mode: auto
+  devices: ["/"]
+
+
+disable_root: false
+users:
+  - name: root
+    shell: /bin/bash
+    lock_passwd: false
+    plain_text_passwd: root
+  - name: vm
+    shell: /bin/bash
+    lock_passwd: false
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    plain_text_passwd: vm
+
+ssh_pwauth: true
+ssh_genkeytypes: [ed25519]
+ssh:
+  emit_keys_to_console: true
+
+locale: en_US.UTF-8
+timezone: Asia/Tokyo
+
+mounts:
+  - [none, /tmp, tmpfs, "rw,nodev,nosuid,size=1G", "0", "0"]
+  - [host-home, /host/home, virtiofs, "defaults,nofail,ro", "0", "0"]
+
+write_files:
+  - content: "username and password are both `vm`\n\n"
+
+    path: /etc/issue
+    append: true
+
+packages:
+  - nano
+  - whiptail
+  - bash-completion
+  - byobu
+
+runcmd:
+  - touch /etc/cloud/cloud-init.disabled
+  - cp /etc/skel/.* /root/
+
+byobu_by_default: enable-system
